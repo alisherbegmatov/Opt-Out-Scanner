@@ -7,6 +7,8 @@
     body { font-family: sans-serif; padding: 2em; }
     input, button { padding: 0.5em; margin: 0.5em 0; width: 100%; max-width: 400px; }
     pre { background: #f4f4f4; padding: 1em; overflow: auto; }
+    a { color: blue; text-decoration: underline; }
+    ul { padding-left: 20px; }
   </style>
 </head>
 <body>
@@ -17,7 +19,7 @@
 
   <script>
     document.getElementById('scanButton').addEventListener('click', async () => {
-      const url = document.getElementById('urlInput').value;
+      const url = document.getElementById('urlInput').value.trim();
       const resultDiv = document.getElementById('result');
       resultDiv.innerHTML = 'Scanning...';
 
@@ -34,7 +36,25 @@
         }
 
         const data = await res.json();
-        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+        const createLinkHTML = (label, href) => {
+          if (!href) {
+            return `<p><strong>${label}:</strong> Not found</p>`;
+          }
+          return `<p><strong>${label}:</strong> <a href="${href}" target="_blank" rel="noopener noreferrer">${href}</a></p>`;
+        };
+
+        const otherLinksList = data.otherRelevantLinks
+          .filter(link => link.href !== data.privacyPolicy && link.href !== data.optOut)
+          .map(link => `<li><a href="${link.href}" target="_blank" rel="noopener noreferrer">${link.text || link.href}</a></li>`)
+          .join('');
+
+        resultDiv.innerHTML = `
+          <h2>Scan Results</h2>
+          ${createLinkHTML('Privacy Policy', data.privacyPolicy)}
+          ${createLinkHTML('Opt-Out / Do Not Sell Page', data.optOut)}
+          ${otherLinksList ? `<h3>Other Relevant Links</h3><ul>${otherLinksList}</ul>` : ''}
+        `;
       } catch (err) {
         resultDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
