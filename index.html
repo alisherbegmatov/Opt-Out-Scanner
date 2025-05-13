@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Opt Out Scanner</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; }
+    input, button { padding: 0.5em; margin: 0.5em 0; width: 100%; max-width: 400px; }
+    pre { background: #f4f4f4; padding: 1em; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Opt Out Scanner</h1>
+  <input id="urlInput" type="text" placeholder="Enter website URL" />
+  <button id="scanButton">Scan</button>
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('scanButton').addEventListener('click', async () => {
+      const url = document.getElementById('urlInput').value;
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Scanning...';
+
+      try {
+        const res = await fetch('http://localhost:3000/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Scan failed');
+        }
+
+        const data = await res.json();
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

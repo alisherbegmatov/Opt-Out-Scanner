@@ -1,0 +1,31 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# Temporary files and directories
+*.swp
+*.swo
+
+# Puppeteer Chromium binaries
+/puppeteer
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# npm package lock file (optional, if you want to regenerate it each time)
+package-lock.json
+
+# Coverage reports (if you use testing tools)
+coverage/
+
+# IDE-specific files (optional, depending on the editor you're using)
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
