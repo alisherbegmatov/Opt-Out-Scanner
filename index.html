@@ -1,42 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Opt Out Scanner</title>
+  <meta charset="UTF-8"> <!-- Sets the character encoding for the page -->
+  <title>Opt Out Scanner</title> <!-- The title shown in the browser tab -->
   <style>
+    /* Basic styling for body and elements */
     body { font-family: sans-serif; padding: 2em; }
-    input, button { padding: 0.5em; margin: 0.5em 0; width: 100%; max-width: 400px; }
+    input, button { 
+      padding: 0.5em; 
+      margin: 0.5em 0; 
+      width: 100%; 
+      max-width: 400px; 
+    }
     pre { background: #f4f4f4; padding: 1em; overflow: auto; }
     a { color: blue; text-decoration: underline; }
     ul { padding-left: 20px; }
   </style>
 </head>
 <body>
-  <h1>Opt Out Scanner</h1>
+  <h1>Opt Out Scanner</h1> <!-- Page heading -->
+
+  <!-- Input field for user to enter a website URL -->
   <input id="urlInput" type="text" placeholder="Enter website URL" />
+
+  <!-- Button to trigger the scan -->
   <button id="scanButton">Scan</button>
+
+  <!-- This div will display scan results -->
   <div id="result"></div>
 
   <script>
+    // Add a click event listener to the Scan button
     document.getElementById('scanButton').addEventListener('click', async () => {
+      // Get and trim the entered URL
       const url = document.getElementById('urlInput').value.trim();
+
+      // Reference to the result display div
       const resultDiv = document.getElementById('result');
+
+      // Show a loading message
       resultDiv.innerHTML = 'Scanning...';
 
       try {
+        // Send a POST request to the local backend server with the URL
         const res = await fetch('http://localhost:3000/scan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url })
+          body: JSON.stringify({ url })  // Send the URL in the request body
         });
 
+        // Check if the response was not OK (e.g., 400 or 500 error)
         if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error.error || 'Scan failed');
+          const error = await res.json();  // Try to read error details
+          throw new Error(error.error || 'Scan failed');  // Throw a descriptive error
         }
 
-        const data = await res.json();
+        const data = await res.json();  // Parse the JSON response from the server
 
+        // Helper function to generate HTML for a link or a "not found" message
         const createLinkHTML = (label, href) => {
           if (!href) {
             return `<p><strong>${label}:</strong> Not found</p>`;
@@ -44,11 +65,17 @@
           return `<p><strong>${label}:</strong> <a href="${href}" target="_blank" rel="noopener noreferrer">${href}</a></p>`;
         };
 
+        // Build a list of additional relevant links (excluding privacy and opt-out)
         const otherLinksList = data.otherRelevantLinks
           .filter(link => link.href !== data.privacyPolicy && link.href !== data.optOut)
-          .map(link => `<li><a href="${link.href}" target="_blank" rel="noopener noreferrer">${link.text || link.href}</a></li>`)
+          .map(link => 
+            `<li><a href="${link.href}" target="_blank" rel="noopener noreferrer">
+              ${link.text || link.href}
+            </a></li>`
+          )
           .join('');
 
+        // Update the result div with the scan results
         resultDiv.innerHTML = `
           <h2>Scan Results</h2>
           ${createLinkHTML('Privacy Policy', data.privacyPolicy)}
@@ -56,6 +83,7 @@
           ${otherLinksList ? `<h3>Other Relevant Links</h3><ul>${otherLinksList}</ul>` : ''}
         `;
       } catch (err) {
+        // Display error message if something goes wrong
         resultDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
       }
     });
